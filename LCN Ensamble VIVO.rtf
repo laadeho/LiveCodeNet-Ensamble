@@ -1,0 +1,117 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue191;\red191\green0\blue0;
+\red51\green51\blue191;\red0\green0\blue255;\red96\green96\blue96;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs34 \cf2 s.boot;\
+s.scope(2);\
+(\
+\cf3 OpenObject\cf2 .start; \cf4 // prende el OpenObject\cf2 \
+\cf3 OpenObject\cf2 .lookup=\cf5 true\cf2 ; \cf4 // habilita la opci\uc0\u8730 \u8805 n de recibir control\cf2 \
+\cf3 OpenObject\cf2 .openProxies; \cf4 // habilita los proxies Ndef, Pdef, Tdef, Fdef\cf2 \
+\cf4 //OpenObject.end; // cierra la comunicaci\'f3n de openboject\cf2 \
+)\
+(\
+q = ();\
+\cf3 NetAddr\cf2 .broadcastFlag = \cf5 true\cf2 ;\
+q.addrs = (0..7).collect \{ \cf6 |x|\cf2  \
+		\cf3 NetAddr\cf2 (\cf7 "255.255.255.255"\cf2 , 57120 + x)\
+\};\
+q.sendAll = \{ \cf6 |q ... args|\cf2 \
+		q.addrs.do \{ \cf6 |addr|\cf2 \
+				addr.sendMsg(*args)\
+		\}; \cf7 ""\cf2 \
+\}\
+)\
+\
+(\
+\cf3 History\cf2 .start;\
+\cf3 History\cf2 .makeWin;\
+\
+\cf3 OSCdef\cf2 (\cf8 \\hist\cf2 , \{ \cf6 |msg|\cf2  \
+	msg.postln;\
+	\cf3 History\cf2 .enter(msg[2].asString, msg[1]);\
+\}, \cf8 \\hist\cf2 ).fix;\
+\
+\cf3 History\cf2 .localOff;\
+\
+\cf3 History\cf2 .forwardFunc = \{ \cf6 |code|\cf2  \
+	q.sendAll(\cf8 \\hist\cf2 , \cf8 \\eduardo\cf2 , code);\
+\};\
+)\
+\
+\cf4 ///TENER LISTO\cf2 \
+\cf3 Ndef\cf2 (\cf8 \\eho\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1, frec = 180|\cf2  \cf3 SinOsc\cf2 .ar(frec,0,0.5)*\cf3 EnvGen\cf2 .kr(\cf3 Env\cf2 .perc(0.01, dur),t_trig)!2\}\
+\cf3 Ndef\cf2 (\cf8 \\eho\cf2 ).fadeTime = 2;\
+\
+\cf3 Ndef\cf2 (\cf8 \\eho\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1, frec = 180|\cf2  \cf3 WhiteNoise\cf2 .ar(0.05)!2\}\
+\cf4 ////Pulse.kr........\cf2 \
+	\cf4 /////SinOsc.ar(frec,0,0.9)*EnvGen.kr(Env.perc(0.01, dur),t_trig)!2\}\cf2 \
+\
+\cf4 ///EVALUAR AL MISMO TIEMPO\cf2 \
+\cf3 Ndef\cf2 (\cf8 \\eho\cf2 ).quant_(4)[1]=\cf8 \\set\cf2  -> \cf3 Pbind\cf2 (\cf8 \\frec\cf2 , \cf3 Prand\cf2 ([180, 0, 158, 170],\cf5 inf\cf2 ),\cf8 \\dur\cf2 , \cf3 Prand\cf2 ([1],\cf5 inf\cf2 ), \cf8 \\t_trig\cf2 , 1); \cf4 // Prand([1, 0.5, 0.25, 0.25, 0.125],inf));\cf2 \
+\
+\cf4 // LO INICIA HERNANI\cf2 \
+\cf4 ///////////  Ndef(\\eho).play\cf2 \
+\cf4 ///////////  Ndef(\\eho).stop; Ndef(\\eho).release;\cf2 \
+\
+\cf7 "L C N "\cf2 .speak\
+\
+\cf7 "ajuuuuuaaaa"\cf2 \
+\
+\cf7 "Live Code Net"\cf2 .speak \cf4 //, we are Live Code Net Ensamble".speak\cf2 \
+\
+\cf4 ///// ESTE ES EL QUE PUEDEN MODIFICAR POR LA RED\cf2 \
+(\
+\cf3 SynthDef\cf2 (\cf8 \\va\cf2 , \{\cf6 |frec=48, vol=0.4, durd2=0.1|\cf2 \
+\cf6 var\cf2  sen, env;\
+sen=\cf3 SinOsc\cf2 .ar(frec,0,vol);\
+env=\cf3 EnvGen\cf2 .kr(\cf3 Env\cf2 .perc(0.1,durd2),doneAction:2);\
+\cf3 Out\cf2 .ar(0,\cf3 Pan2\cf2 .ar(sen*env,0,1))\
+\}).add;\
+\
+\cf3 OSCdef\cf2 (\cf8 \\va\cf2 , \{ \cf6 |msg|\cf2 \
+	 \cf6 var\cf2  x = msg[1], y = msg[2];\
+	\cf3 Pdef\cf2 (\cf8 \\eho00\cf2 , \cf3 Pbind\cf2 (\cf8 \\instrument\cf2 , \cf8 \\va\cf2 ,\cf8 \\frec\cf2 ,\cf3 Prand\cf2 ([x, x*0.9, x*1.15],\cf5 inf\cf2 ).midicps,\cf8 \\dur\cf2 ,\cf3 Pseq\cf2 ([2,0.5,0.25]*y,\cf5 inf\cf2 ),\cf8 \\durd2\cf2 ,\cf3 Prand\cf2 ([1,0.25,0.25]*y,\cf5 inf\cf2 ), \cf8 \\vol\cf2 ,0.4));\
+\}, \cf7 "/eho00"\cf2 ).fix;\
+);\
+\
+\cf3 Pdef\cf2 (\cf8 \\eho00\cf2 ).play\
+\cf3 Pdef\cf2 (\cf8 \\eho00\cf2 ).stop\
+\
+q.sendAll(\cf7 "\\eho00"\cf2 , 120, 0.5); \cf4 // frec - pulso\cf2 \
+\
+\cf4 ///// ACOMPA\'d1ADOS\cf2 \
+\cf3 Ndef\cf2 (\cf8 \\eho01\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 SinOsc\cf2 .ar([160,180]*0.5,0,0.3)*\cf3 SinOsc\cf2 .kr(0.1,0,0.2,0.4)\}\cf4 //*EnvGen.kr(Env.perc(0.1, dur),t_trig)!2\}\cf2 \
+\cf3 Ndef\cf2 (\cf8 \\eho01\cf2 ).quant_(4)[1]=\cf8 \\set\cf2  -> \cf3 Pbind\cf2 (\cf8 \\frec\cf2 , \cf3 Pseq\cf2 ([180, 0, 180, 180, 178, 180, 0],\cf5 inf\cf2 ),\cf8 \\dur\cf2 ,\cf3 Prand\cf2 ([1.5, 2.5],\cf5 inf\cf2 ), \cf8 \\t_trig\cf2 , 1);\
+\cf3 Ndef\cf2 (\cf8 \\eho01\cf2 ).play\
+\cf3 Ndef\cf2 (\cf8 \\eho01\cf2 ).stop\
+\
+\cf4 // whitenoise\cf2 \
+\cf3 Ndef\cf2 (\cf8 \\eho02\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 Out\cf2 .ar(0, \cf3 BPF\cf2 .ar(\cf3 WhiteNoise\cf2 .ar(0.05)*\cf3 Saw\cf2 .kr(0.015), 2500, 0.8, 0.75))\}\
+\cf3 Ndef\cf2 (\cf8 \\eho02\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 Out\cf2 .ar(1, \cf3 BPF\cf2 .ar(\cf3 WhiteNoise\cf2 .ar(0.5)*\cf3 Saw\cf2 .kr(12), 4500, 0.8, 0.75))\}\
+\cf3 Ndef\cf2 (\cf8 \\eho02\cf2 ).play\
+\cf3 Ndef\cf2 (\cf8 \\eho02\cf2 ).fadeTime = 2;\
+\
+"kill them all"\
+\cf3 Ndef\cf2 (\cf8 \\eho03\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 Out\cf2 .ar(1, \cf3 BPF\cf2 .ar(\cf3 BrownNoise\cf2 .ar(0.001)))\}\
+\cf3 Ndef\cf2 (\cf8 \\eho03\cf2 ).play\
+\cf3 Ndef\cf2 (\cf8 \\eho03\cf2 ).fadeTime = 2;\
+\
+\cf3 Ndef\cf2 (\cf8 \\eho04\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 Crackle\cf2 .ar(1.97, 0.05)!2\}\
+\cf3 Ndef\cf2 (\cf8 \\eho04\cf2 ).play\
+\cf3 Ndef\cf2 (\cf8 \\eho04\cf2 ).fadeTime = 2;\
+\
+\cf3 Ndef\cf2 (\cf8 \\eho05\cf2 )[0]=\{\cf6 |dur = 0.1, t_trig = 1|\cf2  \cf3 Dust\cf2 .ar(10, 0.85)!2\}\
+\cf3 \'a1Ndef\cf2 (\cf8 \\eho05\cf2 ).fadeTime = 2;\
+\cf3 Ndef\cf2 (\cf8 \\eho05\cf2 ).play\
+\
+\cf7 "que? algo de noise??"\cf2 \
+\
+\cf3 Ndef\cf2 (\cf8 \\eho01\cf2 ).stop\
+\cf3 Ndef\cf2 (\cf8 \\eho02\cf2 ).stop\
+\cf3 Ndef\cf2 (\cf8 \\eho03\cf2 ).stop\
+\cf3 Ndef\cf2 (\cf8 \\eho04\cf2 ).stop\
+\cf3 Ndef\cf2 (\cf8 \\eho05\cf2 ).stop\
+}

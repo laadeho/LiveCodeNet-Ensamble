@@ -1,0 +1,241 @@
+s.boot;
+s.quit;
+s.meter;
+s.makeGui
+s.queryAllNodes
+
+//---------
+(
+q = ();
+NetAddr.broadcastFlag = true;
+q.addrs = (0..7).collect { |x|
+		NetAddr("255.255.255.255", 57120 + x)
+};
+q.sendAll = { |q ... args|
+		q.addrs.do { |addr|
+				addr.sendMsg(*args)
+		}; ""
+}
+);
+//---------
+(
+History.start;
+History.makeWin;
+
+OSCdef(\hist, { |msg|
+	/*msg.postln;*/
+	History.enter(msg[2].asString,msg[1]);
+}, \hist).fix;
+History.localOff;
+
+History.forwardFunc = { |code|
+	q.sendAll(\hist, \liber, code);
+};
+);
+//----------
+m = MandelHub.start("liber");
+m.gui
+MandelHub.join("follower", action:{m=MandelHub.instance});
+m.gui
+m.takeLead;
+m.timer.reset
+m.changeTempo(90/60,10)
+m.clear
+//------------
+//***S
+(
+Ndef(\uno).fadeTime=2.5;
+Ndef(\uno)[0]={|amp=0.3|	Pan2.ar(LFPar.ar(2.0,0.5,0.1)*LFCub.ar([44,45,47].midicps,0,amp,0.1)*Pulse.ar(68))};
+)
+(
+Ndef(\uno).quant_(4)[1]=\set ->
+Pbind(
+	\amp,Pxrand([0.01,0.02,0.03,0.1].pyramid,inf);
+)
+)
+Ndef(\uno).play;
+Ndef(\uno).rebuild;
+Ndef(\uno).release;
+Ndef(\uno).stop;
+
+//***F
+(
+Ndef(\dos).fadeTime=2.5;
+Ndef(\dos)[0]={|amp=0.1, freq=140|
+	Pan2.ar(Ringz.ar(Impulse.ar(XLine.kr(40,8,120),0,amp),[110,220,440,180]))*LFPar.ar(110,0,0.2)}
+
+)
+(
+Ndef(\dos).quant_(4)[1]=\set ->
+Pbind(
+	\amp,Pxrand([0.3,0.1,0.2,0.3],inf);
+)
+)
+Ndef(\dos).play;
+Ndef(\dos).rebuild;
+Ndef(\dos).release;
+Ndef(\dos).stop;
+
+//***S
+(
+Ndef(\cuatro).fadeTime=2.5;
+Ndef(\cuatro)[0]={
+	Pan2.ar(LFTri.ar([110,220,440,180],0,0.3)*Blip.ar(64)*SinOsc.ar(100,1,0.5))};
+)
+
+Ndef(\cuatro).play;
+Ndef(\cuatro).rebuild;
+Ndef(\cuatro).release;
+Ndef(\cuatro).stop;
+
+//***F
+(
+Ndef(\cinco).fadeTime=2.5;
+Ndef(\cinco)[0]={|amp=0.03|
+	Pan2.ar(Pluck.ar(LFPar.ar(840,0,amp),Impulse.kr(0.5),240.reciprocal,140.reciprocal,33)*LFCub.ar([60,63,67].midicps,0.1))};
+)
+(
+Ndef(\cinco).quant_(4)[1]=\set ->
+Pbind(
+	\amp,Pxrand([0.01,0.02,0.03,0.05].stutter,inf);
+)
+)
+Ndef(\cinco).play;<<<<<<
+Ndef(\cinco).rebuild;
+Ndef(\cinco).release;
+Ndef(\cinco).stop;
+
+//***F
+(
+Ndef(\siete).fadeTime=2.5;
+Ndef(\siete)[0]={|f5=60|	Out.ar(0,Pan2.ar(LFPar.ar([60,63,67,71,74].midicps,0,0.1),LFPar.kr(8),0.5)*LFNoise2.kr(0.5))};
+)
+
+Ndef(\siete).play;
+Ndef(\siete).release;
+Ndef(\siete).rebuild;
+Ndef(\siete).stop;
+
+
+//***Mob
+(
+(SynthDef(\mob,{|out=0,gate=1,frecuencia=60|
+	var sen,env,ruido;
+	ruido=LPF.ar(WhiteNoise.ar(0.50),XLine.kr(400,0.2),0.5);
+	sen=Pan2.ar(SinOsc.ar(frecuencia,0,1)+ruido,0,0.3);
+	env=EnvGen.kr(Env.perc(0.30,0.30),gate,doneAction:2);
+	Out.ar(out,sen*env)}).send(s));
+)
+(Tdef(\bom,{
+	inf.do{
+	2.do{Synth(\mob);
+		4.wait};
+}});
+)
+Tdef(\bom).play;
+Tdef(\bom).stop;
+
+
+//***M
+(
+(SynthDef(\taro,{|out=0,gate=1,frecuencia=160|
+	var sen,env,ruido;
+	ruido=Blip.ar(BrownNoise.ar(30),XLine.kr(1300,0.4),0.7);
+	sen=Pan2.ar(ruido,0,0.5);
+	env=EnvGen.kr(Env.perc(1,5),gate,doneAction:2);
+	Out.ar(out,sen*env)}).send(s));
+)
+(Tdef(\bat11,{
+	inf.do{
+	2.do{Synth(\taro);
+		4.wait};
+}});
+)
+Tdef(\bat11).play;
+Tdef(\bat11).stop;
+
+
+//BOM
+(
+(SynthDef(\bombo,{|out=0,gate=1,frecuencia=100|
+	var sen,env;
+	sen=Pan2.ar(SinOsc.ar(frecuencia,0.25,0.8),0,0.7);
+	env=EnvGen.kr(Env.perc(0.15,3),gate,doneAction:2);
+	Out.ar(out,sen*env)}).send(s));
+)
+(Tdef(\bat,{
+	inf.do{Synth(\bombo);
+		4.wait};
+});
+)
+Tdef(\bat).play;
+Tdef(\bat).stop;
+
+
+//BOM1
+(
+(SynthDef(\bombo1,{|out=0,gate=1,frecuencia=100|
+	var sen,env;
+	sen=Pan2.ar(SinOsc.ar(frecuencia,0.25,0.8),0,0.3);
+	env=EnvGen.kr(Env.perc(0.30,0.30),gate,doneAction:2);
+	Out.ar(out,sen*env)}).send(s));
+)
+(Tdef(\bat1,{
+	inf.do{Synth(\bombo1);
+		8.wait};
+});
+)
+Tdef(\bat1).play;
+Tdef(\bat1).stop;
+
+
+//***F(+- amp)
+(
+(SynthDef(\son,{|out=0,gate=1,par=0.25,en=0.5|
+	var pan,s1,env;
+	pan=Pan2.ar(SinOsc.ar(120,0.5,0.5)+LFPar.kr(64),0.1);
+	s1=LFTri.ar([60,63,67,71,74].midicps,0,0.2)*Blip.kr(Line.kr(10,0.5,10),0.1);
+	env=EnvGen.kr(Env.perc(1,4),gate,doneAction:2);
+	Out.ar(out,pan*s1*env)}).send(s));
+)
+(Tdef(\uno,{
+	inf.do{Synth(\son,[\en, rrand(1,16)]);
+		8.wait}
+})
+)
+Tdef(\uno).play;
+Tdef(\uno).stop;
+
+
+//***F(+- amp)
+(
+(SynthDef(\son1,{|out=0,gate=1,par=0.25|
+	var pan,s1,env;
+	pan=Pan2.ar(LFPar.ar([60,63,67,71,74].midicps,0.5,0.5),LFClipNoise.kr(1),0.5);
+	s1=LFTri.ar(110,0,0.7)*Blip.kr(Line.kr(0.2,0.1,5),0.5);
+	env=EnvGen.kr(Env.perc(1,5),gate,doneAction:2);
+	Out.ar(out,pan*s1*env)}).send(s));
+)
+(Tdef(\uno1,{
+	inf.do{Synth(\son1);
+		2.wait}
+})
+)
+Tdef(\uno1).play;
+Tdef(\uno1).stop;
+
+//***M
+(
+Ndef(\tres).fadeTime=2.5;
+Ndef(\tres)[0]={|amp1=0.07, pul1=1|Pan2.ar(SinOscFB.ar([60,63,67,71,74].midicps.sputter(0.0005,8),0,amp1)*LFPar.ar(pul1))};
+)
+(
+Ndef(\tres).quant_(4)[1]=\set ->
+Pbind(
+	\amp1,Pxrand([0.02,0.04,0.06],inf),	\pul1,Pseq([0.5,0.8,0.9,1,1.5,2,3,3.5,4,4.5,5,6,8,10,12,14,16,18,20,24,28,32,64,64,64,64,67,128,128,128,128].pyramid,inf));
+)
+
+Ndef(\tres).play;
+Ndef(\tres).rebuild;
+Ndef(\tres).release;
+Ndef(\tres).stop;

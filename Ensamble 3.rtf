@@ -1,0 +1,164 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fnil\fcharset0 Monaco;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue0;\red0\green0\blue191;
+\red51\green51\blue191;\red0\green0\blue255;\red96\green96\blue96;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf2 //Ensamble 3 y 4\cf3 \
+\
+s.boot;\
+(\
+q = ();\
+\cf4 NetAddr\cf3 .broadcastFlag = \cf5 true\cf3 ;\
+q.addrs = (0..7).collect \{ \cf6 |x|\cf3  \
+		\cf4 NetAddr\cf3 (\cf7 "255.255.255.255"\cf3 , 57120 + x)\
+\};\
+q.sendAll = \{ \cf6 |q ... args|\cf3 \
+		q.addrs.do \{ \cf6 |addr|\cf3 \
+				addr.sendMsg(*args)\
+		\}; \cf7 ""\cf3 \
+\}\
+)\
+\
+(\
+\cf4 History\cf3 .start;\
+\cf4 History\cf3 .makeWin;\
+\
+\cf4 OSCdef\cf3 (\cf8 \\hist\cf3 , \{ \cf6 |msg|\cf3  \
+	msg.postln;\
+	\cf4 History\cf3 .enter(msg[2].asString, msg[1]);\
+\}, \cf8 \\hist\cf3 ).fix;\
+\
+\cf4 History\cf3 .localOff;\
+\
+\cf4 History\cf3 .forwardFunc = \{ \cf6 |code|\cf3  \
+	q.sendAll(\cf8 \\hist\cf3 , \cf8 \\eduardo\cf3 , code);\
+\};\
+)\
+\
+\cf4 Ndef\cf3 (\cf8 \\sonar\cf3 ).play\
+\cf4 Ndef\cf3 (\cf8 \\sonar\cf3 ).stop\
+\cf4 Ndef\cf3 (\cf8 \\sonar\cf3 )[0]=\{\cf6 |pul = 0.05|\cf3  \cf4 SinOsc\cf3 .ar(120,0,0.5)*\cf4 Pulse\cf3 .ar(pul,0.5,0.2)!2\}\
+\
+(\
+\cf4 OSCdef\cf3 (\cf8 \\a\cf3 , \{\cf6 |msg|\cf3 \
+		\cf6 var\cf3  x = msg[1];\
+		\cf4 Ndef\cf3 (\cf8 \\sonar\cf3 ).quant_(4)[1] = \cf8 \\set\cf3  -> \cf4 Pbind\cf3 (\cf8 \\dur\cf3 , x/2, \cf8 \\pul\cf3 , \cf4 Pseq\cf3 (x, \cf5 inf\cf3 ));\
+\}, \cf7 "eho"\cf3 ).fix;\
+);\
+\
+q.sendAll(\cf7 "\\eho"\cf3 , 4); \cf2 // pulsos\cf3 \
+\
+(\
+\cf4 SynthDef\cf3 (\cf8 \\a\cf3 , \{\cf6 |frec=48, vol=0.75, durd2=0.1|\cf3 \
+\cf6 var\cf3  sen, env;\
+sen=\cf4 SinOsc\cf3 .ar(frec,0,vol*0.7)*\cf4 Pulse\cf3 .ar(4,0.5,0.2);\
+env=\cf4 EnvGen\cf3 .kr(\cf4 Env\cf3 .perc(0.1,durd2),doneAction:2);\
+\cf4 Out\cf3 .ar(0,\cf4 Pan2\cf3 .ar(sen*env,0,1))\
+\}).add;\
+\
+\cf4 OSCdef\cf3 (\cf8 \\a\cf3 , \{ \cf6 |msg|\cf3 \
+	 \cf6 var\cf3  x = msg[1], y = msg[2];\
+	\cf4 Pdef\cf3 (\cf8 \\eho\cf3 , \cf4 Pbind\cf3 (\cf8 \\instrument\cf3 , \cf8 \\a\cf3 ,\cf8 \\frec\cf3 ,\cf4 Prand\cf3 ([x, 1.2, x*1.5],\cf5 inf\cf3 ).midicps,\cf8 \\dur\cf3 ,\cf4 Prand\cf3 ([y, y*1.25, y*0.75],\cf5 inf\cf3 ),\cf8 \\durd2\cf3 ,\cf4 Prand\cf3 ([y, y*1.5, y*2],\cf5 inf\cf3 ), \cf8 \\vol\cf3 ,0.5));\
+\}, \cf7 "/eho"\cf3 ).fix;\
+);\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs26 \cf4 Pdef\cf3 (\cf8 \\eho\cf3 ).play;\
+\cf4 Pdef\cf3 (\cf8 \\eho\cf3 ).stop;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs28 \cf3 \
+\
+\cf2 /////////////////////// OTRO 04 AJUSTAR NUEVO CODE A \cf3 \
+(\
+\cf4 SynthDef\cf3 (\cf8 \\a\cf3 , \{\cf6 |frec=48, vol=0.5, durd2=0.1, pulsos = 0.5|\cf3 \
+\cf6 var\cf3  sen, env;\
+sen=\cf4 SinOsc\cf3 .ar(frec*0.7,0,vol)*\cf4 Pulse\cf3 .ar(4,0.5,0.2)+ \cf4 SinOsc\cf3 .ar(120, 0,0.75)*\cf4 Saw\cf3 .ar(pulsos, vol);\
+env=\cf4 EnvGen\cf3 .kr(\cf4 Env\cf3 .perc(0.1,durd2),doneAction:2);\
+\cf4 Out\cf3 .ar(0,\cf4 Pan2\cf3 .ar(sen*env,0,1))\
+\}).add;\
+\
+\cf4 OSCdef\cf3 (\cf8 \\a\cf3 , \{ \cf6 |msg|\cf3 \
+
+\fs36 	\cf2 //CAMBIAR A\cf3 \
+
+\fs28 	\cf6 var\cf3  x = msg
+\f1\fs36 .unfoldOSCArrays[1].postln
+\f0\fs28 , y = msg
+\f1\fs36 .unfoldOSCArrays[2].postln
+\f0\fs28 ;\
+	\cf4 Pdef\cf3 (\cf8 \\eho\cf3 , \cf4 Pbind\cf3 (\cf8 \\instrument\cf3 , \cf8 \\a\cf3 ,\cf8 \\frec\cf3 ,\cf4 Prand\cf3 ([x, x*1.25, x*2, x*1.5],\cf5 inf\cf3 ).midicps,\cf8 \\dur\cf3 ,\cf4 Pseq\cf3 ([1, 0.5,0.5,0.5, 0.25, 0.125,0.25,0.125]*y,\cf5 inf\cf3 ),\cf8 \\durd2\cf3 ,\cf4 Prand\cf3 ([1, 0.5,0.5,0.5, 0.25, 0.125,0.25,0.125]*y,\cf5 inf\cf3 ), \cf8 \\pulsos\cf3 , \cf4 Prand\cf3 ([y, y*2, y*0.5],\cf5 inf\cf3 ), \cf8 \\vol\cf3 ,0.75));\
+\}, \cf7 "/eho"\cf3 ).fix;\
+);\
+\
+\
+\cf2 /////////////////////// OTRO 04\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs26 \cf3 \
+(\
+q.sendAll(\cf7 "/eho"\cf3 , 60, 1); \cf2 //[frecuencias en midicps] [pulsos]\cf3 \
+)\
+\cf2 //////////////// CAMBIAR A\cf3 \
+\pard\pardeftab720\ql\qnatural
+
+\f1\fs42 \cf3 q.sendAll(\cf7 "/eho"\cf3 , *[60,1].asOSCArgArray); \cf2 //[frecuencias en midicps] [pulsos]
+\fs24 \cf3 \
+
+\fs36 \cf2 //var x = msg.unfoldOSCArrays[1].postln;\cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs26 \cf3 \
+\
+\cf7 "Hola"\cf3 .postln\
+\
+\cf4 Algo\cf3 \
+\
+(\
+\cf4 SynthDef\cf3 (\cf8 \\n\cf3 , \{\cf6 | pul = 8 , durd = 2, freq = 440|\cf3 \
+	\cf6 var\cf3  sen, env;\
+	sen = \cf4 BPF\cf3 .ar(\cf4 WhiteNoise\cf3 .ar(0.125), \cf4 SinOsc\cf3 (5, freq), 100 / \cf4 SinOsc\cf3 (5, freq), 0.5);\
+	env = \cf4 EnvGen\cf3 .kr(\cf4 Env\cf3 .perc(0.1,durd), doneAction:2);\
+	\cf4 Out\cf3 .ar(0,\cf4 Pan2\cf3 .ar(sen,0,1))\
+\}).add;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs28 \cf4 OSCdef\cf3 (\cf8 \\n\cf3 , \{ \cf6 |msg|\cf3 \
+	 \cf6 var\cf3  x = msg[1];\
+	\cf4 Pdef\cf3 (\cf8 \\eho2\cf3 , \cf4 Pbind\cf3 (\cf8 \\instrument\cf3 , \cf8 \\n\cf3 , \cf8 \\pul\cf3 , \cf4 Pseq\cf3 ([x,x/2, x/4, x/2, x, x, x/2],\cf5 inf\cf3 ), \cf8 \\dur\cf3 ,\cf4 Psesq\cf3 ([10, 12, 14, 16]*x,
+\fs26  
+\fs28 \cf5 inf\cf3 ), \cf8 \\
+\fs26 durd\cf3 , 
+\fs28 \cf4 Pseq\cf3 ([10, 12, 14, 16]*x,\cf5 inf\cf3 )));\
+\}, \cf7 "/eho2"\cf3 ).fix;
+\fs26 \
+)\
+
+\fs28 \
+a = \cf4 Synth\cf3 (\cf8 \\n\cf3 )\
+a.play\
+\
+\cf7 "van armon\'edas en 60,63,65"\cf3 \
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs26 \cf4 Pdef\cf3 (\cf8 \\eho2\cf3 ).play;\
+\
+(\
+q.sendAll(\cf7 "/eho"\cf3 , 36, 2); \cf2 //[frecuencias en midicps] [pulsos]\cf3 \
+q.sendAll(\cf7 "/eho2"\cf3 , 2); \cf2 // [pulsos del noise]\cf3 \
+)\
+\
+\
+\
+\cf2 ///// DE HERNANI\cf3 \
+\pard\pardeftab720\ql\qnatural
+
+\f1\fs32 \cf4 Ndef\cf3 (\cf8 \\cuat\cf3 ).quant_(4)[1]= \cf8 \\set\cf3  -> \cf4 Pbind\cf3 (\cf8 \\dur\cf3 ,0.25, \cf8 \\f1\cf3 , \cf4 Pseq\cf3 ([\cf4 Pn\cf3 (75,2),48,\cf8 \\rest\cf3 ,55,\cf8 \\rest\cf3 ,59,78,66,\cf4 Pn\cf3 (77,2),69].midicps,\cf5 inf\cf3 ), \cf8 \\t_trig\cf3 , 1)\
+
+\fs24 \
+}
